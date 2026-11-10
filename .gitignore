@@ -1,0 +1,21 @@
+# Dépendances
+node_modules/
+
+# Build Vite (régénéré à chaque déploiement)
+dist/
+
+# Application desktop Electron : dépôt séparé
+StatX/
+
+# Variables d'environnement
+.env
+.env.*
+!.env.example
+
+# Cache et artefacts locaux
+.vite/
+.wrangler/
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*

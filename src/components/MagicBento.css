@@ -1,0 +1,143 @@
+/* ===========================================================================
+   Magic Bento — éclairage des cartes de l'aperçu « StatX — Performances ».
+   Reprend les effets de la MagicBento de React Bits : lumière qui suit le
+   curseur, bordure réactive (y compris sur les cartes voisines), onde au clic
+   et entrée en cascade. Chaque carte reçoit ses variables --bento-* du moteur
+   (MagicBento.jsx) ; aucune structure ni couleur de l'aperçu n'est modifiée.
+   =========================================================================== */
+
+.magic-bento {
+  position: relative;
+}
+
+.magic-bento > * {
+  position: relative;
+  isolation: isolate;
+
+  --bento-rgb: 232, 234, 240;
+  --bento-spot-alpha: 0.1;
+  --bento-edge-alpha: 0.85;
+  --bento-spot-size: 300px;
+  --bento-border-size: 225px;
+  --bento-x: -999px;
+  --bento-y: -999px;
+  --bento-hot: 0;
+  --bento-near: 0;
+  --bento-wx: -999px;
+  --bento-wy: -999px;
+  --bento-wr: 0px;
+  --bento-wa: 0;
+}
+
+/* Le contenu reste au-dessus de la lumière. */
+.magic-bento > * > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Accent de chaque carte : CPU, mémoire, températures, GPU, réseau,
+   processus, disques. */
+.magic-bento > *:nth-child(1) { --bento-rgb: 78, 161, 255; }
+.magic-bento > *:nth-child(2) { --bento-rgb: 52, 211, 153; }
+.magic-bento > *:nth-child(3) { --bento-rgb: 251, 146, 60; }
+.magic-bento > *:nth-child(4) { --bento-rgb: 167, 139, 250; }
+.magic-bento > *:nth-child(5) { --bento-rgb: 34, 211, 238; }
+.magic-bento > *:nth-child(6) { --bento-rgb: 232, 234, 240; }
+.magic-bento > *:nth-child(7) { --bento-rgb: 148, 163, 184; }
+
+/* Lumière douce qui suit le curseur dans la carte survolée. */
+.magic-bento > *::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(
+    var(--bento-spot-size) circle at var(--bento-x) var(--bento-y),
+    rgba(var(--bento-rgb), calc(var(--bento-spot-alpha) * var(--bento-hot) * 1)) 0%,
+    rgba(var(--bento-rgb), calc(var(--bento-spot-alpha) * var(--bento-hot) * 0.973)) 15%,
+    rgba(var(--bento-rgb), calc(var(--bento-spot-alpha) * var(--bento-hot) * 0.837)) 30%,
+    rgba(var(--bento-rgb), calc(var(--bento-spot-alpha) * var(--bento-hot) * 0.593)) 45%,
+    rgba(var(--bento-rgb), calc(var(--bento-spot-alpha) * var(--bento-hot) * 0.317)) 60%,
+    rgba(var(--bento-rgb), calc(var(--bento-spot-alpha) * var(--bento-hot) * 0.104)) 75%,
+    rgba(var(--bento-rgb), calc(var(--bento-spot-alpha) * var(--bento-hot) * 0.009)) 90%,
+    rgba(var(--bento-rgb), 0) 100%
+  );
+  pointer-events: none;
+}
+
+/* Bordure éclairée près du curseur + anneau de l'onde au clic. */
+.magic-bento > *::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: 2;
+  box-sizing: border-box;
+  padding: 1px;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      var(--bento-border-size) circle at var(--bento-x) var(--bento-y),
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-near) * 1)) 0%,
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-near) * 0.973)) 15%,
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-near) * 0.837)) 30%,
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-near) * 0.593)) 45%,
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-near) * 0.317)) 60%,
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-near) * 0.104)) 75%,
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-near) * 0.009)) 90%,
+      rgba(var(--bento-rgb), 0) 100%
+    ),
+    radial-gradient(
+      circle at var(--bento-wx) var(--bento-wy),
+      rgba(var(--bento-rgb), 0) calc(var(--bento-wr) - 110px),
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-wa) * 0.1)) calc(var(--bento-wr) - 80px),
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-wa) * 0.32)) calc(var(--bento-wr) - 52px),
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-wa) * 0.68)) calc(var(--bento-wr) - 28px),
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-wa) * 0.94)) calc(var(--bento-wr) - 10px),
+      rgba(var(--bento-rgb), calc(var(--bento-edge-alpha) * var(--bento-wa))) calc(var(--bento-wr) - 3px),
+      rgba(var(--bento-rgb), 0) var(--bento-wr)
+    );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+}
+
+/* Entrée en cascade : les cartes montent une à une à l'apparition. */
+.magic-bento[data-intro] > * {
+  opacity: 0;
+  transform: translate3d(0, 16px, 0) scale(0.97);
+}
+
+.magic-bento[data-intro][data-bento-in] > * {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 420ms cubic-bezier(0.22, 1, 0.36, 1) var(--bento-delay, 0ms),
+    transform 760ms cubic-bezier(0.34, 1.4, 0.64, 1) var(--bento-delay, 0ms);
+}
+
+.magic-bento[data-intro][data-bento-in] > *:nth-child(1) { --bento-delay: 0ms; }
+.magic-bento[data-intro][data-bento-in] > *:nth-child(2) { --bento-delay: 70ms; }
+.magic-bento[data-intro][data-bento-in] > *:nth-child(3) { --bento-delay: 140ms; }
+.magic-bento[data-intro][data-bento-in] > *:nth-child(4) { --bento-delay: 210ms; }
+.magic-bento[data-intro][data-bento-in] > *:nth-child(5) { --bento-delay: 280ms; }
+.magic-bento[data-intro][data-bento-in] > *:nth-child(6) { --bento-delay: 350ms; }
+.magic-bento[data-intro][data-bento-in] > *:nth-child(7) { --bento-delay: 420ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .magic-bento[data-intro] > * {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .magic-bento > *::before,
+  .magic-bento > *::after {
+    display: none;
+  }
+}

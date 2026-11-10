@@ -1,0 +1,20 @@
+# Cloudflare Pages — politique de cache.
+#
+# L'HTML doit toujours être revalidé : après un nouveau déploiement, les
+# anciens assets hashés ne sont plus servis. Un index.html resté en cache
+# pointerait vers des fichiers 404 et laisserait une page blanche.
+/*
+  Cache-Control: no-cache, must-revalidate
+
+# Les assets du build portent leur hash dans leur nom : leur contenu ne
+# change jamais, on peut donc les garder un an côté navigateur.
+# (! Cache-Control annule la règle générale avant de la remplacer.)
+/assets/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+
+# Un asset manquant doit répondre 404 (voir public/assets/404.html) et ne
+# jamais être mis en cache : Pages renverrait sinon l'app shell à sa place.
+/assets/404.html
+  ! Cache-Control
+  Cache-Control: no-store

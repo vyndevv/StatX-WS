@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StatX — Vos métriques, enfin lisibles</title>
+    <meta
+      name="description"
+      content="StatX réunit le CPU, la RAM, le GPU, les disques et le réseau de votre PC Windows dans une seule fenêtre. Léger, rapide, bientôt sur macOS et Linux."
+    />
+    <meta name="theme-color" content="#050509" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div id="root">
+      <!-- Filet de sécurité remplacé par React dès le montage : si le bundle
+           ne se charge pas (ancien asset supprimé, réseau, etc.), on affiche
+           un message actionnable au lieu de laisser #root vide. -->
+      <div
+        id="boot-fallback"
+        role="status"
+        style="
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          padding: 24px;
+          background: #050509;
+          color: #9b98ad;
+          font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+          font-size: 15px;
+          text-align: center;
+        "
+      >
+        <span data-boot-label>Chargement…</span>
+        <button
+          type="button"
+          data-boot-reload
+          hidden
+          onclick="window.location.reload()"
+          style="
+            padding: 10px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #f4f4f8;
+            font: inherit;
+            cursor: pointer;
+          "
+        >
+          Recharger la page
+        </button>
+      </div>
+    </div>
+    <script type="module" src="/src/main.jsx"></script>
+    <script>
+      // Le fallback reste visible si l'application ne monte pas. Un asset
+      // manquant déclenche une erreur de chargement de script : on l'affiche
+      // immédiatement ; sinon un délai couvre les chargements bloqués.
+      (function () {
+        var fallback = document.getElementById('boot-fallback');
+        if (!fallback) return;
+
+        var label = fallback.querySelector('[data-boot-label]');
+        var button = fallback.querySelector('[data-boot-reload]');
+        var failed = false;
+
+        var showFailure = function () {
+          // React a monté : le fallback a été remplacé par la page.
+          if (failed || !fallback.isConnected) return;
+          failed = true;
+          label.textContent = "Le site n'a pas pu se charger.";
+          button.hidden = false;
+        };
+
+        var timer = window.setTimeout(showFailure, 10000);
+
+        window.addEventListener(
+          'error',
+          function (event) {
+            var target = event.target;
+            if (!target || target.tagName !== 'SCRIPT' || !target.src) return;
+            if (target.src.indexOf('/assets/') === -1) return;
+            window.clearTimeout(timer);
+            showFailure();
+          },
+          true
+        );
+      })();
+    </script>
+  </body>
+</html>
